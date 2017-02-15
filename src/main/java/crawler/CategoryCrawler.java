@@ -21,13 +21,14 @@ public class CategoryCrawler implements Runnable {
 	@Override
 	public void run() {
 		RecipePersister rp = new RecipePersister("jdbc:mysql://localhost:3306/recipes?useSSL=false", "root", "123456");
-		getAllPagesAtCategory(category).stream()
-									   .map(page -> getAllRecipesAtPage(page))
-									   .map(recipesAtPage -> recipesAtPage.stream()
-											   							  .map(recipeLink -> getSingleRecipe(recipeLink))
-											   							  .collect(Collectors.toList()))
-									   .forEach(listOfRecipes -> rp.persistListOfRecipes(listOfRecipes));
-
+		rp.persistListOfRecipes(getAllPagesAtCategory(category)
+									.stream()
+									.map(page -> getAllRecipesAtPage(page))
+									.map(recipesAtPage -> recipesAtPage.stream()
+																	   .map(recipeLink -> getSingleRecipe(recipeLink))
+																	   .collect(Collectors.toList()))
+									.flatMap(listOfRecipes -> listOfRecipes.stream())
+									.collect(Collectors.toList()));
 	}
 
 	private List<String> getAllPagesAtCategory(String category) {
