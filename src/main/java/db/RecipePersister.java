@@ -1,5 +1,6 @@
 package db;
 
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -35,19 +36,21 @@ public class RecipePersister {
 			addRecipeBatch(recipeInsertStm, recipe);
 			addProductsBatch(productInsertStm, recipe.getProducts());
 		}
-		
-		recipeInsertStm.executeBatch();	
-		productInsertStm.executeBatch();
-		
-		
-		System.out.println("MAPING METHOD");
+
+		try {
+			recipeInsertStm.executeBatch();
+			productInsertStm.executeBatch();
+		} catch (BatchUpdateException e) {
+		}
+
 		createMapingBatch(listOfRecipes, conn, mapingInsertStm);
-		System.out.println("END OF MAPING METHOD");
-		mapingInsertStm.executeBatch();
+		try {
+			mapingInsertStm.executeBatch();
+		} catch (BatchUpdateException e) {
+		}
 		mapingInsertStm.close();
 		productInsertStm.close();
 		recipeInsertStm.close();
-		
 		conn.close();
 
 	}
@@ -59,7 +62,6 @@ public class RecipePersister {
 
 		for (Recipe recipe : listOfRecipes) {
 			int recipeID = getRecipeID(recipe, selectRecipeStm);
-			System.out.println("Recipe ID : " + recipeID);
 			List<Integer> productsIDs = getProductsIDs(recipe, selectProudctsStm);
 			for (Integer productID : productsIDs) {
 				mapingInsertStm.setInt(1, recipeID);
@@ -85,33 +87,6 @@ public class RecipePersister {
 		recipeInsertStm.addBatch();
 	}
 
-	// public void persistRecipe(Recipe recipe) throws SQLException {
-	// Connection conn = DriverManager.getConnection(dbURL, username, password);
-	// PreparedStatement stm = conn.prepareStatement(PRODUCT_INSERT_QUERY);
-	// for (Product product : recipe.getProducts()) {
-	// persistProduct(product, stm);
-	// }
-	// stm = conn.prepareStatement(RECIPE_INSERT_QUERY);
-	// persistRecipeInfo(recipe, stm);
-	// stm.close();
-	// persistRecipeToMapTable(recipe, conn);
-	// conn.close();
-	//
-	// }
-
-	// private void persistRecipeToMapTable(Recipe recipe, Connection conn)
-	// throws SQLException {
-	// int recipeID = getRecipeID(recipe, conn);
-	// List<Integer> productsIDs = getProductsIDs(recipe, conn);
-	// PreparedStatement stm = conn.prepareStatement(MAPING_INSERT_QUERY);
-	// stm.setInt(1, recipeID);
-	// for (Integer productID : productsIDs) {
-	// stm.setInt(2, productID);
-	// stm.executeUpdate();
-	// }
-	// stm.close();
-	// }
-
 	private List<Integer> getProductsIDs(Recipe recipe, PreparedStatement selectProudctsStm) throws SQLException {
 		List<Integer> productsIDs = new LinkedList<>();
 		ResultSet rs = null;
@@ -135,22 +110,4 @@ public class RecipePersister {
 		rs.close();
 		return result;
 	}
-
-	// private void persistRecipeInfo(Recipe recipe, PreparedStatement stm)
-	// throws SQLException {
-	// stm.setString(1, recipe.getName());
-	// stm.setString(2, recipe.getDescription());
-	// stm.executeUpdate();
-	// }
-	//
-	// private void persistProduct(Product product, PreparedStatement stm)
-	// throws SQLException {
-	// stm.setString(1, product.getName());
-	// try {
-	// stm.executeUpdate();
-	// } catch (SQLIntegrityConstraintViolationException e) {
-	//
-	// }
-	// }
-
 }

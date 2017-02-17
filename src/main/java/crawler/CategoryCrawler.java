@@ -2,8 +2,7 @@ package crawler;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,16 +20,20 @@ public class CategoryCrawler implements Runnable {
 	@Override
 	public void run() {
 		RecipePersister rp = new RecipePersister("jdbc:mysql://localhost:3306/recipes?useSSL=false", "root", "123456");
-		rp.persistListOfRecipes(getAllPagesAtCategory(category)
-									.stream()
-									.map(page -> getAllRecipesAtPage(page))
-									.map(recipesAtPage -> recipesAtPage.stream()
-																	   .map(recipeLink -> getSingleRecipe(recipeLink))
-																	   .collect(Collectors.toList()))
-									.flatMap(listOfRecipes -> listOfRecipes.stream())
-									.collect(Collectors.toList()));
+		try {
+			rp.persistListOfRecipes(getAllPagesAtCategory(category)
+										.stream()
+										.map(page -> getAllRecipesAtPage(page))
+										.map(recipesAtPage -> recipesAtPage.stream()
+																		   .map(recipeLink -> getSingleRecipe(recipeLink))
+																		   .collect(Collectors.toList()))
+										.flatMap(listOfRecipes -> listOfRecipes.stream())
+										.collect(Collectors.toList()));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}					 
 	}
-
+	
 	private List<String> getAllPagesAtCategory(String category) {
 		try {
 			return crawler.getAllPagesAtCategory(category);
