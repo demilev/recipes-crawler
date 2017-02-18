@@ -39,6 +39,9 @@ public class RecipePersister {
 
 		try {
 			recipeInsertStm.executeBatch();
+		} catch (BatchUpdateException e) {
+		}
+		try {
 			productInsertStm.executeBatch();
 		} catch (BatchUpdateException e) {
 		}

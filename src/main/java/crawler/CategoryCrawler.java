@@ -31,7 +31,7 @@ public class CategoryCrawler implements Runnable {
 										.collect(Collectors.toList()));
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}					 
+		}			
 	}
 	
 	private List<String> getAllPagesAtCategory(String category) {

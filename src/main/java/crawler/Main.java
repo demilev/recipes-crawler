@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-	private static final int NUMBER_OF_THREADS = 20;
+	private static final int NUMBER_OF_THREADS = 150;
 
 	public static void main(String[] args) throws InterruptedException, IOException {
 		long start = System.currentTimeMillis();
@@ -16,8 +16,8 @@ public class Main {
 		new RecipesCrawler().getCategories().forEach(category -> crawler.execute(new CategoryCrawler(category)));
 		crawler.shutdown();
 		crawler.awaitTermination(5, TimeUnit.HOURS);
-		
+	
 		long end = System.currentTimeMillis();
-		System.out.println("Finished for " + (end - start)/10000 + " minutes.");
+		System.out.println("Finished for " + (end - start)/60000 + " minutes.");
 	}
 }
